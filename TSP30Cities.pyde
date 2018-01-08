@@ -195,10 +195,12 @@ def draw():
     global population, number_of_organisms
     background(0)
     
+    #uncomment to add random new organisms
     '''for i in range(50):
         new_org = Organism()
         population.append(new_org)'''
     
+    #uncomment to limit the population
     '''if len(population) > 10000:
         while len(population) > 10000:
             index = random.randint(0,len(population)-1)
