@@ -1,8 +1,6 @@
 '''TSPGAbook3Crossover2.pyde
 For the GA Chapter of book
-Fixed the glitch January 7, 2018
-I'm using a list of 30 cities but
-it can also be made random.'''
+Fixed the glitch January 7, 2018'''
 
 import random
 
@@ -60,15 +58,19 @@ class Route:
 
 class Genes:
     def __init__(self):
+        #random list of numbers representing the order of cities visited
         self.city_nums = random.sample(list(range(number_of_cities)),
                                             number_of_cities)
+        #create a route with that order:
         self.route = Route(cities,self.city_nums)
 
     def mutate(self):
         #swaps two numbers in city numbers list
         index1,index2 = random.sample(list(range(number_of_cities)),2)
+        #a,b = b,a to swap
         self.city_nums[index1],self.city_nums[index2] = \
             self.city_nums[index2],self.city_nums[index1]
+        #again, after changing the order you have to change the Route, too
         self.route = Route(cities,self.city_nums)
         
     def mutate3(self):
@@ -82,14 +84,15 @@ class Genes:
         child = Organism()
         #print("child: ",child.cities)
         index = random.randint(0,number_of_cities-1) #start of slice
-        slicesize = random.randint(1,number_of_cities-index)
+        slicesize = random.randint(1,number_of_cities-index) #size of slice
         myslice = self.city_nums[index:index+slicesize]
+        #list of numbers not in the slice
         notinslice = [x for x in partner.genes.city_nums if x not in myslice]
         def generateNextCity():
             '''generates next city not in the slice'''
             for n in notinslice:
                 yield n
-        nextCity = generateNextCity()
+        nextCity = generateNextCity() #a generator!
         #print("slice: ",myslice)
         #put slice in child list
         for i in range(slicesize):
@@ -100,9 +103,10 @@ class Genes:
             if j not in range(index,index+slicesize,1):
                 #apply numbers from "notinslice" list
                 child.genes.city_nums[j] = next(nextCity)
+        #once again, after changing the order, you have to update the Route
         child.genes.route = Route(cities,child.genes.city_nums)
     
-        #mutate the genes
+        #mutate the genes (same as mutate(self))
         if random.random() < mutationRate:
             a = random.randint(0,number_of_cities-1)
             b = random.randint(0,number_of_cities-1)
@@ -115,6 +119,7 @@ class Organism:
         self.score = 0
     
     def calcScore(self):
+        #the lower the length of the route, the higher the score
         self.score = 100000.0/self.genes.route.calcLength()
         return self.score
     
@@ -127,9 +132,11 @@ number_of_organisms = 1000
         
 def setup():
     global best_genes,record_distance,first_best,cities
-    global population
+    global population,org1
     size(800,800)
     background(0)
+    #create a cities list randomly or from an
+    #already generated list of cities for testing/comparison
     cities = [City(454.0,648.0,0),
 City(706.0,474.0,1),
 City(301.0,595.0,2),
@@ -160,26 +167,31 @@ City(337.0,191.0,26),
 City(318.0,696.0,27),
 City(147.0,733.0,28),
 City(434.0,471.0,29)]
+    #uncomment this out to generate Cities in random locations
     '''
     for i in range(number_of_cities):
             cities.append(City(random.randint(20,width-20),
                             random.randint(20,height-20),i))
+    #This prints out the list of cities for future use
     for city in cities:
         println("City("+str(city.loc.x)+','+ \
         str(city.loc.y)+','+str(city.number)+"),")'''
+    #put the organisms in the population list
     for i in range(number_of_organisms):
         population.append(Organism())
+    #choose a random Organism to be the first best one
     org1 = random.choice(population)
     #best Genes 
     best_genes = org1.genes
+    #first best route length
     first_best = best_genes.route.calcLength()
     record_distance = first_best
-    org1.display()
+    
     #println(record_distance)
     
     
 def draw():
-    global best_genes, record_distance
+    global best_genes, record_distance,org1
     global population, number_of_organisms
     background(0)
     
@@ -228,12 +240,18 @@ def draw():
     textSize(24)
     text(record_distance,450,30)
     noFill()
+    
+    #draw first guess in white if you want to see it
+    #org1.display(WHITE) 
             
     #create mating pool
     matingPool = []
     for org in population:
         score = org.calcScore()
+        #get score as integer
         num = int(score)
+        #put that many copies of the Organism in
+        #the mating pool
         for i in range(num):
             matingPool.append(org)
     #println("matingpool: "+str(len(matingPool)))
@@ -252,12 +270,15 @@ def draw():
     child = Organism()
     child.genes.city_nums = best_genes.city_nums[::]
     child.genes.mutate()
+    #put it in the population
     population.append(child)
-                
+    
+    #display the best route in purple            
     best_genes.route.display(PURPLE)
     #println("Pop: "+str(len(population)))
     
 def displayResults(best_genes, record_distance, first_best):
+    '''prints the stats in the console'''
     println("first: "+str(first_best) + " record: "+ str(record_distance))
     println(best_genes.city_nums)
     #println("improvement: "+ \
